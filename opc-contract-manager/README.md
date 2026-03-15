@@ -1,4 +1,4 @@
-# OPC Contract Manager — Claude Code Skill
+# OPC Contract Manager
 
 A Contract Review + Contract Ops Copilot for solo entrepreneurs and one-person company CEOs.
 

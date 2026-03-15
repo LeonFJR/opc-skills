@@ -237,6 +237,65 @@
     "notes": {
       "type": ["string", "null"],
       "description": "Free-form notes about this contract"
+    },
+
+    "billing_model": {
+      "type": ["string", "null"],
+      "enum": ["fixed", "milestone", "hourly", "retainer", "subscription", null],
+      "description": "How billing is structured under this contract. Used by opc-invoice-manager for auto-inference."
+    },
+    "billing_trigger": {
+      "type": ["string", "null"],
+      "description": "What triggers invoicing rights (e.g., 'monthly on 1st', 'upon milestone acceptance', 'upon delivery')"
+    },
+    "milestone_definitions": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "milestone_name": { "type": "string" },
+          "amount": { "type": "string", "description": "Amount as string for decimal safety" },
+          "trigger": { "type": "string", "description": "What triggers this milestone payment" },
+          "status": {
+            "type": ["string", "null"],
+            "enum": ["pending", "completed", "invoiced", "paid", null]
+          }
+        }
+      },
+      "description": "Milestone payment schedule with amounts and triggers"
+    },
+    "deposit_required": {
+      "type": ["boolean", "null"],
+      "description": "Whether a deposit is required before work begins"
+    },
+    "deposit_amount": {
+      "type": ["string", "null"],
+      "description": "Deposit amount as string for decimal safety"
+    },
+    "final_payment_rule": {
+      "type": ["string", "null"],
+      "description": "Rule for final payment (e.g., 'upon project completion and acceptance')"
+    },
+    "reimbursable_expenses_allowed": {
+      "type": ["boolean", "null"],
+      "description": "Whether the contract allows reimbursable expense invoicing"
+    },
+    "client_po_required": {
+      "type": ["boolean", "null"],
+      "description": "Whether a purchase order number is required on invoices"
+    },
+    "invoice_submission_method": {
+      "type": ["string", "null"],
+      "enum": ["email", "portal", "mail", null],
+      "description": "How invoices must be submitted to this client"
+    },
+    "late_fee_clause": {
+      "type": ["string", "null"],
+      "description": "Description of late fee rights in the contract (e.g., '1.5% per month on overdue amounts')"
+    },
+    "payment_dispute_window": {
+      "type": ["string", "null"],
+      "description": "Time window for client to dispute an invoice (e.g., '15 days from receipt')"
     }
   }
 }

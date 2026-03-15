@@ -1,5 +1,5 @@
 ---
-name: contract-review
+name: opc-contract-manager
 description: >
   Contract Review + Contract Ops Copilot for solo entrepreneurs.
   Analyzes contracts, flags risks, generates redline suggestions and negotiation

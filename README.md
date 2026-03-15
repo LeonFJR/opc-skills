@@ -8,7 +8,7 @@ Build, run, and grow your business with AI-powered operational tools — designe
 
 | Skill | Description | Status |
 |-------|-------------|--------|
-| [contract-review](./contract-review/) | Review, archive, and manage contracts. Pre-signing risk analysis, negotiation prep, deadline tracking, and portfolio insights. | Available |
+| [opc-contract-manager](./opc-contract-manager/) | Review, archive, and manage contracts. Pre-signing risk analysis, negotiation prep, deadline tracking, and portfolio insights. | Available |
 
 ## Installation
 
@@ -22,7 +22,7 @@ git clone https://github.com/LeonFJR/opc-skills.git ~/.claude/skills/opc-skills
 
 ```bash
 # Copy only the skill you need
-cp -r opc-skills/contract-review ~/.claude/skills/contract-review
+cp -r opc-skills/opc-contract-manager ~/.claude/skills/opc-contract-manager
 ```
 
 ### Option 3: Add as a project skill
@@ -31,7 +31,7 @@ Reference the skill directory in your project's `.claude/settings.json`:
 
 ```json
 {
-  "skills": ["path/to/opc-skills/contract-review"]
+  "skills": ["path/to/opc-skills/opc-contract-manager"]
 }
 ```
 

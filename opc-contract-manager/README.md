@@ -1,4 +1,4 @@
-# Contract Review — Claude Code Skill
+# OPC Contract Manager — Claude Code Skill
 
 A Contract Review + Contract Ops Copilot for solo entrepreneurs and one-person company CEOs.
 
@@ -38,7 +38,7 @@ git clone https://github.com/LeonFJR/opc-skills.git ~/.claude/skills/opc-skills
 ### Option 2: Copy just this skill
 
 ```bash
-cp -r contract-review ~/.claude/skills/contract-review
+cp -r opc-contract-manager ~/.claude/skills/opc-contract-manager
 ```
 
 ### Option 3: Project-level skill
@@ -47,7 +47,7 @@ Add to your project's `.claude/settings.json`:
 
 ```json
 {
-  "skills": ["path/to/contract-review"]
+  "skills": ["path/to/opc-contract-manager"]
 }
 ```
 
@@ -56,7 +56,7 @@ Add to your project's `.claude/settings.json`:
 ### Review a contract
 
 ```
-/contract-review
+/opc-contract-manager
 
 [paste contract text or provide file path]
 ```
@@ -66,7 +66,7 @@ The skill auto-detects the contract type and counterparty. No need to answer a q
 ### Quick clause check
 
 ```
-/contract-review
+/opc-contract-manager
 
 Is this non-compete clause reasonable? "Contractor shall not engage in any
 competing business within the United States for a period of 24 months..."
@@ -75,7 +75,7 @@ competing business within the United States for a period of 24 months..."
 ### Archive a signed contract
 
 ```
-/contract-review
+/opc-contract-manager
 
 Archive this contract: [paste or file path]
 Counterparty: Acme Corp
@@ -85,7 +85,7 @@ Signed on: 2026-01-15
 ### Check deadlines
 
 ```
-/contract-review
+/opc-contract-manager
 
 Show me my contract dashboard
 ```
@@ -93,7 +93,7 @@ Show me my contract dashboard
 ### Search contracts
 
 ```
-/contract-review
+/opc-contract-manager
 
 Find all contracts with Acme Corp
 Which contracts have uncapped liability?
@@ -125,7 +125,7 @@ contracts/
 ## Skill Architecture
 
 ```
-contract-review/
+opc-contract-manager/
 ├── SKILL.md                                      # Core workflow (~250 lines)
 ├── README.md                                     # This file
 ├── LICENSE                                       # MIT

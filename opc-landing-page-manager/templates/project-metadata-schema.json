@@ -1,0 +1,258 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Landing Page Project Metadata",
+  "description": "Schema for landing page project metadata. Used by project_tracker.py.",
+  "type": "object",
+  "required": [
+    "project_id",
+    "product_name",
+    "status"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Unique ID in format: YYYY-MM-DD_product-slug",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}_[a-z0-9-]+$"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Name of the product or service"
+    },
+    "product_slug": {
+      "type": "string",
+      "description": "URL-safe lowercase slug",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "tagline": {
+      "type": ["string", "null"],
+      "description": "One-line product tagline"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the project was created"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Date of last update"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["strategy", "copy", "design", "build", "review", "published", "archived"],
+      "description": "Current phase of the project"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version number, incremented on each rebuild"
+    },
+
+    "strategy": {
+      "type": "object",
+      "properties": {
+        "target_audience": {
+          "type": ["string", "null"],
+          "description": "Primary target audience description"
+        },
+        "audience_pain_points": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Key pain points of the target audience"
+        },
+        "value_proposition": {
+          "type": ["string", "null"],
+          "description": "Core value proposition statement"
+        },
+        "competitive_alternatives": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "What alternatives does the audience currently use?"
+        },
+        "unique_differentiator": {
+          "type": ["string", "null"],
+          "description": "What makes this product uniquely different?"
+        },
+        "conversion_goal": {
+          "type": ["string", "null"],
+          "enum": ["email_capture", "free_trial", "purchase", "demo_request", "download", "contact", "waitlist", null],
+          "description": "Primary conversion goal for the page"
+        },
+        "product_type": {
+          "type": ["string", "null"],
+          "enum": ["saas", "digital_product", "service", "physical_product", "newsletter", "community", "free_tool", "open_source", "waitlist", null],
+          "description": "Type of product being promoted"
+        },
+        "price_point": {
+          "type": ["string", "null"],
+          "description": "Price or pricing range (e.g., '$29/mo', 'Free', '$99 one-time')"
+        },
+        "copywriting_framework": {
+          "type": ["string", "null"],
+          "enum": ["pas", "aida", "bab", "4ps", "storybrand", null],
+          "description": "Selected copywriting framework"
+        },
+        "tone": {
+          "type": ["string", "null"],
+          "enum": ["professional", "professional-casual", "casual", "bold", null],
+          "description": "Copy tone"
+        }
+      },
+      "description": "Strategy phase outputs"
+    },
+
+    "design": {
+      "type": "object",
+      "properties": {
+        "color_palette": {
+          "type": ["string", "null"],
+          "enum": ["saas-tech", "creative", "business-finance", "bold-startup", "minimal-clean", "dark-mode", "custom", null],
+          "description": "Selected color palette"
+        },
+        "custom_colors": {
+          "type": ["object", "null"],
+          "properties": {
+            "primary": { "type": "string" },
+            "accent": { "type": "string" },
+            "bg": { "type": "string" },
+            "text": { "type": "string" }
+          },
+          "description": "Custom color overrides (hex values)"
+        },
+        "font_heading": {
+          "type": ["string", "null"],
+          "description": "Heading font family"
+        },
+        "font_body": {
+          "type": ["string", "null"],
+          "description": "Body font family"
+        },
+        "hero_layout": {
+          "type": ["string", "null"],
+          "enum": ["split", "centered", "full-width-image", "video-background", null],
+          "description": "Hero section layout variant"
+        },
+        "sections_included": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered list of sections included in the page"
+        }
+      },
+      "description": "Design phase outputs"
+    },
+
+    "copy": {
+      "type": "object",
+      "properties": {
+        "headline": { "type": ["string", "null"] },
+        "subheadline": { "type": ["string", "null"] },
+        "cta_primary_text": { "type": ["string", "null"] },
+        "cta_secondary_text": { "type": ["string", "null"] },
+        "cta_url": { "type": ["string", "null"] },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "description": { "type": "string" },
+              "icon": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "how_it_works_steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "testimonials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "quote": { "type": "string" },
+              "name": { "type": "string" },
+              "title": { "type": ["string", "null"] },
+              "company": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "faq": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": { "type": "string" },
+              "answer": { "type": "string" }
+            }
+          }
+        },
+        "social_proof_text": { "type": ["string", "null"] },
+        "final_cta_headline": { "type": ["string", "null"] },
+        "final_cta_subtext": { "type": ["string", "null"] },
+        "meta_title": { "type": ["string", "null"] },
+        "meta_description": { "type": ["string", "null"] },
+        "og_title": { "type": ["string", "null"] },
+        "og_description": { "type": ["string", "null"] }
+      },
+      "description": "Copy content for all sections"
+    },
+
+    "build": {
+      "type": "object",
+      "properties": {
+        "output_files": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Relative paths to generated files"
+        },
+        "built_at": {
+          "type": ["string", "null"],
+          "format": "date",
+          "description": "Date of last build"
+        },
+        "includes_google_fonts": {
+          "type": "boolean",
+          "description": "Whether the page links to Google Fonts"
+        },
+        "includes_analytics": {
+          "type": "boolean",
+          "description": "Whether analytics placeholder is included"
+        }
+      },
+      "description": "Build phase outputs"
+    },
+
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "variant_id": { "type": "string" },
+          "variant_type": {
+            "type": "string",
+            "enum": ["headline", "cta", "hero_layout", "color_palette", "full_page"]
+          },
+          "description": { "type": "string" },
+          "file_path": { "type": "string" }
+        }
+      },
+      "description": "A/B test variants generated"
+    },
+
+    "contract_id": {
+      "type": ["string", "null"],
+      "description": "Linked contract ID from opc-contract-manager (if product has a related contract)"
+    },
+
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Free-form notes about this project"
+    }
+  }
+}

@@ -10,6 +10,7 @@ Build, run, and grow your business with AI-powered operational tools — designe
 |-------|-------------|--------|
 | [opc-contract-manager](./opc-contract-manager/) | Review, archive, and manage contracts. Pre-signing risk analysis, negotiation prep, deadline tracking, and portfolio insights. | Available |
 | [opc-invoice-manager](./opc-invoice-manager/) | AR light system — invoice generation, collections follow-up, payment reconciliation, aging analysis, and cash flow visibility. | Available |
+| [opc-landing-page-manager](./opc-landing-page-manager/) | Landing page strategy, copywriting, design, and code generation — from product idea to a complete, conversion-optimized HTML page. | Available |
 
 ## Installation
 

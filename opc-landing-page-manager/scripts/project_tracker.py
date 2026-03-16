@@ -2,7 +2,8 @@
 """
 Landing page project tracker for opc-landing-page-manager.
 
-Manages the project index, tracks versions, and provides project status.
+Manages the project index, tracks versions, readiness scoring, and provides
+project status.
 
 Usage:
     python3 project_tracker.py [pages_dir]
@@ -10,6 +11,7 @@ Usage:
     python3 project_tracker.py --status [pages_dir]
     python3 project_tracker.py --list [pages_dir]
     python3 project_tracker.py --versions PROJECT_ID [pages_dir]
+    python3 project_tracker.py --readiness [pages_dir]
     python3 project_tracker.py --json [pages_dir]
 
 Options:
@@ -17,6 +19,7 @@ Options:
     --status        Show status summary of all projects
     --list          List all projects (one per line)
     --versions ID   Show version history for a project
+    --readiness     Show publish-readiness report for all projects
     --json          Output as JSON instead of human-readable
     pages_dir       Path to landing-pages directory (default: ./landing-pages)
 
@@ -71,6 +74,107 @@ def find_projects(pages_dir: Path) -> list:
     return projects
 
 
+def compute_readiness(project: dict) -> dict:
+    """Compute publish-readiness score for a project."""
+    score = 0
+    details = {}
+    blockers = project.get('publish_blockers', [])
+    missing = project.get('missing_assets', [])
+
+    # CTA target defined (15 points)
+    cta_defined = project.get('cta_target_defined')
+    if cta_defined is True:
+        score += 15
+        details['cta_target'] = 'defined'
+    else:
+        details['cta_target'] = 'not defined'
+
+    # Privacy policy linked (10 points)
+    privacy = project.get('privacy_policy_linked')
+    if privacy is True:
+        score += 10
+        details['privacy_policy'] = 'linked'
+    else:
+        details['privacy_policy'] = 'missing'
+
+    # Terms linked (10 points)
+    terms = project.get('terms_linked')
+    if terms is True:
+        score += 10
+        details['terms'] = 'linked'
+    else:
+        details['terms'] = 'missing'
+
+    # Analytics status (0-10 points)
+    analytics = project.get('analytics_status', 'none')
+    if analytics == 'configured':
+        score += 10
+        details['analytics'] = 'configured'
+    elif analytics == 'placeholder':
+        score += 5
+        details['analytics'] = 'placeholder'
+    else:
+        details['analytics'] = 'none'
+
+    # Missing assets (0-20 points)
+    if not missing:
+        score += 20
+        details['missing_assets'] = 'none'
+    elif len(missing) <= 2:
+        score += 10
+        details['missing_assets'] = f'{len(missing)} items'
+    else:
+        details['missing_assets'] = f'{len(missing)} items'
+
+    # Publish blockers (0-20 points)
+    if not blockers:
+        score += 20
+        details['blockers'] = 'none'
+    else:
+        details['blockers'] = f'{len(blockers)} issues'
+
+    # Status at least "build" (15 points)
+    status = project.get('status', '')
+    build_or_later = ['build', 'review', 'published']
+    if status in build_or_later:
+        score += 15
+        details['status_progress'] = status
+    else:
+        details['status_progress'] = f'{status} (pre-build)'
+
+    return {
+        'score': score,
+        'missing_assets': missing,
+        'publish_blockers': blockers,
+        'details': details,
+        'page_type': project.get('page_type'),
+        'evidence_tier': project.get('evidence_tier')
+    }
+
+
+def format_readiness_human(projects: list) -> str:
+    """Format readiness report for human reading."""
+    lines = []
+    lines.append("READINESS REPORT")
+    lines.append("")
+    lines.append(f"  {'Product':<30s} {'Score':>5s}  {'Status':<12s} {'Blockers'}")
+    lines.append("  " + "-" * 75)
+
+    for pid, p in projects:
+        readiness = compute_readiness(p)
+        blockers = readiness['publish_blockers']
+        blocker_str = ', '.join(blockers[:3]) if blockers else 'None'
+        if len(blockers) > 3:
+            blocker_str += f' (+{len(blockers) - 3} more)'
+        name = p.get('product_name', pid)[:30]
+        status = p.get('status', 'unknown')
+        lines.append(
+            f"  {name:<30s} {readiness['score']:>4d}%  {status:<12s} {blocker_str}"
+        )
+
+    return "\n".join(lines)
+
+
 def build_index(pages_dir: Path) -> dict:
     """Build INDEX.json from all project metadata."""
     projects = find_projects(pages_dir)
@@ -112,6 +216,14 @@ def build_index(pages_dir: Path) -> dict:
         if variants:
             entry["variant_count"] = len(variants)
 
+        # Include lifecycle fields
+        if p.get('page_type'):
+            entry["page_type"] = p["page_type"]
+        if p.get('evidence_tier'):
+            entry["evidence_tier"] = p["evidence_tier"]
+        if p.get('readiness_score') is not None:
+            entry["readiness_score"] = p["readiness_score"]
+
         index["projects"].append(entry)
 
     index["status_summary"] = status_counts
@@ -150,13 +262,21 @@ def get_status_summary(pages_dir: Path) -> dict:
         p = latest[pid]
         status = p.get('status', 'unknown')
         summary["by_status"][status] = summary["by_status"].get(status, 0) + 1
-        summary["projects"].append({
+        project_entry = {
             "project_id": pid,
             "product_name": p.get('product_name', ''),
             "status": status,
             "version": p.get('version', 1),
             "updated_at": p.get('updated_at', p.get('created_at', ''))
-        })
+        }
+        if p.get('page_type'):
+            project_entry["page_type"] = p["page_type"]
+        if p.get('readiness_score') is not None:
+            project_entry["readiness_score"] = p["readiness_score"]
+        blocker_count = len(p.get('publish_blockers', []))
+        if blocker_count > 0:
+            project_entry["publish_blockers_count"] = blocker_count
+        summary["projects"].append(project_entry)
 
     return summary
 
@@ -214,6 +334,22 @@ def format_versions_human(versions: list, project_id: str) -> str:
         if directory:
             lines.append(f"         dir: {directory}")
 
+        # Show variant/experiment info if present
+        variants = v.get('variants', [])
+        for var in variants:
+            var_type = var.get('variant_type', '')
+            hypothesis = var.get('hypothesis', '')
+            decision = var.get('decision', '')
+            changed = var.get('changed_sections', [])
+            parts = [f"type: {var_type}"]
+            if hypothesis:
+                parts.append(f"hypothesis: {hypothesis}")
+            if changed:
+                parts.append(f"changed: {', '.join(changed)}")
+            if decision:
+                parts.append(f"decision: {decision}")
+            lines.append(f"         variant: {' | '.join(parts)}")
+
     return "\n".join(lines)
 
 
@@ -248,6 +384,11 @@ def main():
         help='Show version history for a project'
     )
     parser.add_argument(
+        '--readiness',
+        action='store_true',
+        help='Show publish-readiness report for all projects'
+    )
+    parser.add_argument(
         '--json',
         action='store_true',
         help='Output as JSON'
@@ -265,7 +406,30 @@ def main():
         sys.exit(0)
 
     try:
-        if args.index:
+        if args.readiness:
+            projects = find_projects(pages_dir)
+            # Deduplicate
+            latest = {}
+            for p in projects:
+                pid = p.get('project_id', '')
+                version = p.get('version', 1)
+                if pid not in latest or version > latest[pid].get('version', 1):
+                    latest[pid] = p
+
+            if args.json:
+                readiness_data = []
+                for pid in sorted(latest.keys()):
+                    r = compute_readiness(latest[pid])
+                    r['project_id'] = pid
+                    r['product_name'] = latest[pid].get('product_name', '')
+                    r['status'] = latest[pid].get('status', '')
+                    readiness_data.append(r)
+                print(json.dumps(readiness_data, indent=2))
+            else:
+                sorted_projects = [(pid, latest[pid]) for pid in sorted(latest.keys())]
+                print(format_readiness_human(sorted_projects))
+
+        elif args.index:
             index = build_index(pages_dir)
             if args.json:
                 print(json.dumps(index, indent=2))

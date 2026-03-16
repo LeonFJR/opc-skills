@@ -239,7 +239,29 @@
             "enum": ["headline", "cta", "hero_layout", "color_palette", "full_page"]
           },
           "description": { "type": "string" },
-          "file_path": { "type": "string" }
+          "file_path": { "type": "string" },
+          "hypothesis": {
+            "type": ["string", "null"],
+            "description": "What we're testing and why"
+          },
+          "changed_sections": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Sections changed from parent version"
+          },
+          "primary_metric": {
+            "type": ["string", "null"],
+            "description": "What to measure (e.g., 'click-through rate', 'form submissions')"
+          },
+          "decision": {
+            "type": ["string", "null"],
+            "enum": ["keep", "discard", "pending", null],
+            "description": "Experiment outcome decision"
+          },
+          "parent_version": {
+            "type": ["integer", "null"],
+            "description": "Version this variant branched from"
+          }
         }
       },
       "description": "A/B test variants generated"
@@ -248,6 +270,69 @@
     "contract_id": {
       "type": ["string", "null"],
       "description": "Linked contract ID from opc-contract-manager (if product has a related contract)"
+    },
+
+    "page_type": {
+      "type": ["string", "null"],
+      "enum": ["waitlist", "demo_booking", "direct_purchase", "service_lead_gen", null],
+      "description": "Forced page type classification based on conversion goal and evidence tier"
+    },
+    "evidence_tier": {
+      "type": ["string", "null"],
+      "enum": ["tier_1_outcome_proof", "tier_2_mechanism_proof", "tier_3_preview", null],
+      "description": "Evidence density classification based on available proof assets"
+    },
+    "readiness_score": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Computed publish-readiness score (0-100)"
+    },
+    "missing_assets": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Assets still needed before publish (e.g., 'product screenshot', 'testimonial quotes')"
+    },
+    "cta_target_defined": {
+      "type": ["boolean", "null"],
+      "description": "Whether CTA URL points to a real destination (not # or placeholder)"
+    },
+    "privacy_policy_linked": {
+      "type": ["boolean", "null"],
+      "description": "Whether privacy policy link is present and not commented out"
+    },
+    "terms_linked": {
+      "type": ["boolean", "null"],
+      "description": "Whether terms of service link is present and not commented out"
+    },
+    "analytics_status": {
+      "type": ["string", "null"],
+      "enum": ["none", "placeholder", "configured", null],
+      "description": "State of analytics integration"
+    },
+    "brief_completeness": {
+      "type": ["string", "null"],
+      "enum": ["full", "partial", "assumptions_made", null],
+      "description": "How complete the initial brief was"
+    },
+    "publish_blockers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Issues that must be resolved before publishing"
+    },
+    "brief_assumptions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Assumptions made when brief was incomplete (MVB gate)"
+    },
+    "related_invoices": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Invoice IDs from opc-invoice-manager related to this landing page's product"
+    },
+    "legal_entity": {
+      "type": ["string", "null"],
+      "description": "Legal entity name, pulled from contract's owner_entity field"
     },
 
     "notes": {

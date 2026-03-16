@@ -54,6 +54,46 @@ From strongest to weakest:
 
 **If you have no social proof yet**: Use a "beta" or "early access" frame. Don't fabricate testimonials.
 
+### Evidence Density Tiers
+
+Hard rules for copy generation based on available evidence. Assess evidence before writing any copy.
+
+#### Tier 1: Outcome Proof
+
+**Trigger**: User has real case studies, specific results, named testimonials, user counts, or measurable outcomes.
+
+**Copy rules**:
+- Full testimonial sections with specific outcomes ("saved 40 hours/month", "increased revenue 23%")
+- Social proof bar with real metrics and logos
+- Use exact numbers — never round or fabricate
+- Pricing section with confidence (the product is proven)
+- Can use all section types from the page type template
+
+#### Tier 2: Mechanism Proof
+
+**Trigger**: Founder has credibility/expertise, clear process, or relevant background, but no customer case studies yet.
+
+**Copy rules**:
+- Founder story / credibility section replaces testimonials
+- "Why this works" framing instead of "what others achieved"
+- Methodology focus: explain the mechanism, not the results
+- Use founder's background as proof ("10 years as a ...", "previously built X")
+- Avoid implying customer results that don't exist
+- Can include pricing if the product is launched
+
+#### Tier 3: Preview / Waitlist
+
+**Trigger**: No evidence at all — new idea, no customers, no founder credibility in this specific space.
+
+**Copy rules**:
+- **FORCE `page_type` to `"waitlist"`** regardless of what the user requested
+- Do NOT include a pricing section
+- Do NOT include a testimonials section
+- Do NOT include a social proof bar
+- Headline framing: "Coming soon" / "Be the first to..." / "Join the waitlist"
+- Minimal sections: hero + problem teaser + solution preview + email capture
+- Explicitly note to user: "Based on available evidence, this is best positioned as a preview/waitlist page. Once you have customer results or founder credibility to highlight, we can upgrade to a full page."
+
 ### 4. Risk Reversal
 
 Reduce the perceived risk of taking action:
@@ -227,6 +267,45 @@ Before considering the landing page "done", verify:
 - [ ] Terms of service link (if selling something)
 - [ ] Cookie notice (if applicable to jurisdiction)
 - [ ] No false claims or fabricated testimonials
+
+---
+
+## Compliance Branching Rules
+
+These are **hard rules** that generate `publish_blockers[]` entries in project metadata if not addressed. They are not suggestions.
+
+### Email / Data Collection CTA
+
+If the CTA involves email capture, form submission, or any user data collection:
+
+- **REQUIRED**: Privacy policy link in footer (uncommented, pointing to a real URL — not `#` or `{{placeholder}}`)
+- If not present → add to `publish_blockers[]`: `"Privacy policy link required (CTA collects user data)"`
+- Set `privacy_policy_linked` to `false` in metadata
+
+### Payment / Purchase CTA
+
+If the CTA involves payment, purchase, subscription, or buying:
+
+- **REQUIRED**: Terms of service link in footer (uncommented, real URL)
+- **REQUIRED**: Refund or cancellation policy (in FAQ section or dedicated section)
+- If terms missing → add to `publish_blockers[]`: `"Terms of service required (CTA involves payment)"`
+- If refund policy missing → add to `publish_blockers[]`: `"Refund policy required (CTA involves payment)"`
+- Set `terms_linked` to `false` in metadata for missing terms
+
+### EU Audience Targeting
+
+If user mentions EU audience, European customers, GDPR, or any EU-specific context:
+
+- **NOTE**: Cookie consent mechanism will be needed before deployment
+- Add to `publish_blockers[]`: `"Cookie consent banner required (EU audience)"`
+- Add to `missing_assets[]`: `"Cookie consent implementation"`
+
+### Enforcement
+
+These rules are checked:
+1. During Phase 5 (Archive) — when computing readiness score
+2. By `page_audit.py --compliance` — standalone HTML audit
+3. They populate `publish_blockers[]`, `privacy_policy_linked`, and `terms_linked` in project metadata
 
 ---
 

@@ -247,6 +247,87 @@ Rules:
 
 ---
 
+## Page Type Templates
+
+When the Strategy phase determines a page type, use the corresponding forced section order below. Do not add sections from other page types unless the user explicitly requests it.
+
+### Waitlist Page (`page_type: "waitlist"`)
+
+For pre-launch products with no evidence (Tier 3) or products not yet ready for full pages.
+
+**Forced section order:**
+1. **Navigation** — logo + "Join Waitlist" CTA button
+2. **Hero** — teaser headline, subheadline describing what's coming, single email-capture field inline with submit button, reassurance text ("We'll only email you once, when we launch")
+3. **Problem / Opportunity teaser** — 1-2 sentences only, not a full section with cards
+4. **Solution preview** — what it will do, 3 bullet points maximum
+5. **Timeline** — "Launching Q2 2026" or similar, with optional waitlist count ("432 people already waiting")
+6. **Social proof bar** — only if available (beta signups count, advisor logos). Otherwise omit.
+7. **Footer** — minimal: copyright only
+
+**Sections explicitly excluded**: Pricing, FAQ (more than 2-3 items), Features grid, Testimonials, How It Works (full), Case Study, Comparison Table.
+
+**Template**: Use `templates/waitlist-page.html` as structural reference.
+
+---
+
+### Demo / Booking Page (`page_type: "demo_booking"`)
+
+For services or complex products where the conversion goal is scheduling a demo or consultation.
+
+**Forced section order:**
+1. **Navigation** — logo + "Book a Demo" / "Schedule a Call" CTA
+2. **Hero** — outcome-focused headline, calendar/booking CTA button
+3. **Credibility bar** — logos, client count, years of experience
+4. **Process / How It Works** — what happens in the demo or engagement (3-4 steps)
+5. **Scope section** — what's included, what's not
+6. **Social proof / Testimonials** — if available. Otherwise omit.
+7. **FAQ** — 3-5 objection-handling questions ("What happens after the demo?", "How long is the call?")
+8. **Final CTA** — calendar/booking CTA repeated
+9. **Footer** — contact info, privacy policy, terms
+
+---
+
+### Direct Purchase Page (`page_type: "direct_purchase"`)
+
+For launched products with pricing where the conversion goal is an immediate purchase.
+
+**Forced section order:**
+1. **Navigation** — logo + primary buy CTA
+2. **Hero** — benefit-led headline, primary buy CTA button
+3. **Social proof bar** — user count, logos, ratings
+4. **Problem section** — why the status quo is broken
+5. **Solution / Benefits** — how the product solves it
+6. **How It Works** — 3-step process
+7. **Features grid** — if product has 3+ distinct features
+8. **Pricing section** — **required**. Tiers or single price with clear what's-included.
+9. **Risk reversal section** — **required**. Money-back guarantee, free trial, refund policy.
+10. **FAQ / Objection handling** — 5-8 questions addressing purchase objections
+11. **Testimonials** — if available. Otherwise omit.
+12. **Final CTA** — buy action repeated with recap headline
+13. **Footer** — privacy policy, terms of service, contact
+
+---
+
+### Service Lead-Gen Page (`page_type: "service_lead_gen"`)
+
+For service businesses where the conversion goal is a contact form submission or quote request.
+
+**Forced section order:**
+1. **Navigation** — logo + "Get in Touch" / "Request a Quote" CTA
+2. **Hero** — outcome-focused headline, "Get in Touch" CTA button
+3. **Credibility section** — founder story, years of experience, notable clients, relevant background
+4. **Methodology / How We Work** — process description (Discovery → Proposal → Engagement → Delivery), not product features
+5. **Scope / What's Included** — clear deliverables, optionally with "What's Not Included" column
+6. **Case studies or results** — if available. Otherwise omit.
+7. **Testimonials** — if available. Otherwise omit.
+8. **FAQ** — 5 questions focused on service objections ("How long does an engagement take?", "What if it's not a good fit?")
+9. **Final CTA** — contact form (name + email + message) or calendar booking link
+10. **Footer** — contact info, privacy policy, terms of service
+
+**Template**: Use `templates/service-page.html` as structural reference.
+
+---
+
 ## Above-the-Fold Checklist
 
 The hero section (visible without scrolling) must answer these 3 questions in < 5 seconds:

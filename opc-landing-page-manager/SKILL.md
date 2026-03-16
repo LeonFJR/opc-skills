@@ -53,6 +53,46 @@ Detect user intent from their first message:
 
 Load: `read_file("references/conversion-optimization.md")`
 
+### Minimum Viable Brief (MVB) Gate
+
+Before proceeding, check the user's input for these 4 elements:
+1. **Product one-liner** — what it does in one sentence
+2. **Target audience** — who it's for
+3. **Single CTA** — what action the visitor should take
+4. **Evidence assets** — testimonials, case studies, user count, founder credentials
+
+**Rule**: At least 3 of 4 must be present or clearly inferable. If fewer than 3:
+- Do NOT interrogate with a list of questions
+- DO output "**Assumptions I'm making:**" with a bulleted list of what you're inferring
+- Set `brief_completeness` to `"assumptions_made"` in metadata
+- Set `brief_assumptions[]` to the list of assumptions
+
+If 3+ elements present or inferable: set `brief_completeness` to `"full"`.
+
+### Evidence Tier Assessment
+
+Classify the project into Tier 1, 2, or 3 based on available evidence (see Evidence Density Tiers in `references/conversion-optimization.md`):
+
+- **Tier 1 (Outcome Proof)** → proceed normally with all sections available
+- **Tier 2 (Mechanism Proof)** → adjust section selection: founder story replaces testimonials, methodology focus
+- **Tier 3 (Preview)** → force `page_type` to `"waitlist"`, use waitlist template, notify user
+
+Set `evidence_tier` in metadata.
+
+### Page Type Selection
+
+Load: `read_file("references/landing-page-anatomy.md")` — see Page Type Templates.
+
+Based on conversion goal and evidence tier, select one of 4 page types:
+- `waitlist` — pre-launch, no evidence, email capture
+- `demo_booking` — service/complex product, calendar CTA
+- `direct_purchase` — launched product with pricing, buy CTA
+- `service_lead_gen` — service business, contact/quote CTA
+
+Set `page_type` in metadata. Use the forced section order from the selected page type template.
+
+### Strategy Decisions
+
 **Auto-infer from user input — don't interrogate:**
 - Product type (SaaS, digital product, service, etc.)
 - Target audience (from product description context)
@@ -72,8 +112,10 @@ Output a concise strategy summary:
 3. **Competitive positioning** — how this is different
 4. **Conversion goal + CTA** — what action, what incentive
 5. **Recommended framework** — PAS/AIDA/BAB/4Ps/StoryBrand + why
-6. **Sections to include** — based on product type
-7. **Design direction** — palette + hero layout
+6. **Page type** — which of the 4 page types and why
+7. **Evidence tier** — Tier 1/2/3 and what it means for sections
+8. **Sections to include** — based on page type template
+9. **Design direction** — palette + hero layout
 
 Confirm: "Here's the strategy. Want to adjust anything before I write the copy?"
 
@@ -84,7 +126,12 @@ Confirm: "Here's the strategy. Want to adjust anything before I write the copy?"
 Load: `read_file("references/copywriting-frameworks.md")`
 Load: `read_file("references/landing-page-anatomy.md")`
 
-Using the selected framework, write all copy for every section chosen in Strategy:
+Using the selected framework, write all copy for every section chosen in Strategy.
+
+**Evidence-aware copy generation** — follow the Evidence Density Tier rules from `references/conversion-optimization.md`:
+- **Tier 1**: Include full testimonial sections, specific numbers, social proof bar with real metrics
+- **Tier 2**: Use founder credibility, methodology focus, "why this works" framing. Founder story replaces testimonials.
+- **Tier 3**: Minimal copy — teaser headline, problem/solution preview, timeline, email capture only. No pricing, no testimonials.
 
 ### Section-by-Section Generation
 
@@ -154,6 +201,14 @@ Before presenting the page:
 - [ ] No "Lorem ipsum" or filler text
 - [ ] No AI attribution on the page
 
+### Compliance Checks (Self-Verify)
+
+Check against rules in `references/conversion-optimization.md` → Compliance Branching Rules:
+- [ ] If CTA collects data → privacy policy link is uncommented and has a real URL
+- [ ] If CTA involves payment → terms of service link present
+- [ ] If CTA involves payment → refund policy in FAQ or dedicated section
+- If any fail → add to `publish_blockers[]` in metadata, proceed with build but flag in output
+
 ---
 
 ## Phase 5: Archive
@@ -169,6 +224,28 @@ Contents:
 - `copy-brief.md` — copy document
 
 Run: `python3 [skill_dir]/scripts/project_tracker.py --index [pages_dir]`
+
+### Readiness Computation
+
+Compute and set in metadata:
+- `readiness_score` — based on checklist (CTA target, privacy, terms, analytics, missing assets, blockers, status). Scaled 0-100.
+- `missing_assets[]` — assets still needed (e.g., "product screenshot", "testimonial quotes")
+- `publish_blockers[]` — compliance and content issues that must be resolved
+- `cta_target_defined` — whether CTA URL points to a real destination (not `#` or `{{cta_url}}`)
+- `privacy_policy_linked` — whether privacy policy link is present and uncommented
+- `terms_linked` — whether terms of service link is present and uncommented
+- `analytics_status` — `"none"`, `"placeholder"`, or `"configured"`
+
+### Cross-Skill Linkage
+
+If user mentions a contract or client name that matches an existing contract in opc-contract-manager:
+- Set `contract_id` to the matching contract ID
+- Pull `owner_entity` → `legal_entity` in metadata
+- Pull `contract_value` → inform pricing section if applicable
+- Pull `counterparty_name` → can inform ICP/audience
+
+If invoices exist for this product in opc-invoice-manager:
+- Set `related_invoices[]` with matching invoice IDs
 
 ---
 
@@ -205,25 +282,37 @@ Output variants as:
 
 Track variants in metadata `variants[]` array.
 
+For each variant, also record in the variant object:
+- `hypothesis` — what we're testing and why
+- `changed_sections[]` — which sections differ from parent
+- `primary_metric` — what to measure (e.g., "click-through rate", "form submissions")
+- `decision` — initially `"pending"`, user updates to `"keep"` or `"discard"`
+- `parent_version` — which version this variant branched from
+
 ---
 
 ## Review Mode
 
 When user provides an existing landing page (HTML or URL):
 
+Load: `read_file("references/review-rubric.md")`
 Load: `read_file("references/conversion-optimization.md")`
 
-Analyze and score:
-1. **Clarity** — Does the hero pass the 5-second test?
-2. **Value proposition** — Is it specific and benefit-led?
-3. **CTA** — Is it clear, specific, and prominent?
-4. **Social proof** — Present and credible?
-5. **Objection handling** — Does the page address likely concerns?
-6. **Mobile** — Responsive and usable on small screens?
-7. **Accessibility** — Semantic HTML, contrast, keyboard nav?
-8. **Load performance** — External dependencies, image optimization?
+Score the page against the 7-category rubric:
 
-Output: Section-by-section review with specific improvement suggestions.
+1. **Clarity** (1-5) — headline clarity, value prop, audience fit
+2. **Offer** (1-5) — pricing clarity, specificity, risk reversal
+3. **Proof** (1-5) — social proof quality, evidence density
+4. **Friction** (1-5) — form fields, CTA clarity, trust signals
+5. **Mobile Hierarchy** (1-5) — responsive layout, thumb-zone CTAs, text sizes
+6. **Accessibility** (1-5) — semantic HTML, contrast, skip-nav, heading hierarchy
+7. **SEO/Social** (1-5) — title, meta description, OG tags
+
+Output:
+- Score table (category | score | notes | fail conditions triggered)
+- Overall score and grade band (Ship-ready / Needs polish / Significant gaps / Rebuild recommended)
+- Top 3 specific improvement recommendations with priority ranking
+- Evidence tier classification of the reviewed page
 
 ---
 
@@ -235,6 +324,11 @@ Display:
 - Total projects by status (strategy / copy / design / build / review / published / archived)
 - Project list with name, status, version, last updated
 - Quick actions: "Continue building [product]", "Create new project"
+
+If `--readiness` context is relevant:
+- Show readiness score, missing assets, and publish blockers for each project
+- Highlight projects with blockers
+- Answer: "which page can ship today, which still needs work"
 
 ---
 

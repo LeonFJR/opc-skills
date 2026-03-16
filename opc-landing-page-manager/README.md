@@ -7,6 +7,9 @@ Give it a product idea, and it takes you from **strategic positioning to a compl
 ## What It Does
 
 ### Strategy
+- **Minimum Viable Brief (MVB) gate** — infers missing context, states assumptions instead of interrogating
+- **Evidence tier assessment** — classifies projects as Tier 1 (outcome proof), Tier 2 (mechanism proof), or Tier 3 (preview) based on available evidence
+- **Page type selection** — forces one of 4 page types (waitlist, demo booking, direct purchase, service lead-gen) with locked section orders
 - **Target audience analysis** — who, what they want, what frustrates them
 - **Value proposition crafting** — specific, benefit-led positioning
 - **Competitive positioning** — what makes your product different
@@ -43,8 +46,19 @@ Give it a product idea, and it takes you from **strategic positioning to a compl
 - **Design pivots** — switch color palettes, hero layouts, section order
 
 ### Review Mode
-- **Analyze existing pages** — score clarity, CTA, social proof, mobile, accessibility
-- **Specific improvements** — not just "this could be better" but exactly how
+- **7-category rubric** — Clarity, Offer, Proof, Friction, Mobile, Accessibility, SEO/Social
+- **Fixed scoring** — each category 1-5 with automatic-fail conditions, overall grade bands
+- **Specific improvements** — top 3 prioritized recommendations, not generic advice
+
+### Readiness Tracking
+- **Publish-readiness score** — 0-100 score based on CTA targets, privacy/terms, analytics, assets, blockers
+- **Compliance checks** — hard rules for privacy policy (data collection), terms of service (payments), cookie consent (EU)
+- **Missing assets tracking** — what's still needed before launch
+- **Publish blockers** — issues that must be resolved before going live
+
+### Cross-Skill Integration
+- **Contract linkage** — pull client info, pricing, and legal entity from opc-contract-manager
+- **Invoice linkage** — track related invoices from opc-invoice-manager
 
 ## Installation
 
@@ -131,12 +145,43 @@ Review this landing page and tell me how to improve conversions:
 [paste HTML or provide file path]
 ```
 
+### Review with rubric scoring
+
+```
+/opc-landing-page-manager
+
+Review this landing page and score it:
+[paste HTML or provide file path]
+```
+
 ### Check project status
 
 ```
 /opc-landing-page-manager
 
 Show me my landing page projects
+```
+
+### Audit HTML quality
+
+```bash
+python3 scripts/page_audit.py my-page.html
+python3 scripts/page_audit.py my-page.html --compliance
+python3 scripts/page_audit.py --dir ./landing-pages --json
+```
+
+### Check readiness
+
+```bash
+python3 scripts/project_tracker.py --readiness ./landing-pages
+```
+
+### Cross-skill integration
+
+```
+/opc-landing-page-manager
+
+Build a landing page for the product in contract 2026-01-15_acme_service-agreement
 ```
 
 ## Project Structure
@@ -159,21 +204,25 @@ landing-pages/
 
 ```
 opc-landing-page-manager/
-├── SKILL.md                                      # Core workflow (~280 lines)
+├── SKILL.md                                      # Core workflow (~370 lines)
 ├── README.md                                     # This file
 ├── LICENSE                                       # MIT
 ├── references/
 │   ├── copywriting-frameworks.md                 # PAS, AIDA, BAB, 4Ps, StoryBrand + headline formulas
-│   ├── landing-page-anatomy.md                   # Section order, templates, product-type recommendations
-│   ├── conversion-optimization.md                # Conversion principles, CTA, forms, speed, mobile, checklist
-│   └── design-system.md                          # Color palettes, typography, spacing, layout, components
+│   ├── landing-page-anatomy.md                   # Section order, page type templates, product-type recs
+│   ├── conversion-optimization.md                # Conversion principles, evidence tiers, compliance rules
+│   ├── design-system.md                          # Color palettes, typography, spacing, layout, components
+│   └── review-rubric.md                          # 7-category fixed scoring rubric for Review mode
 ├── templates/
-│   ├── landing-page.html                         # HTML template with inline CSS (structural reference)
+│   ├── landing-page.html                         # HTML template — general purpose (structural reference)
+│   ├── waitlist-page.html                        # HTML template — waitlist/pre-launch pages
+│   ├── service-page.html                         # HTML template — service/consulting lead-gen pages
 │   ├── project-metadata-schema.json              # Full project metadata schema
 │   ├── strategy-canvas.md                        # Strategy canvas template
 │   └── copy-brief.md                             # Copy brief template
 └── scripts/
-    └── project_tracker.py                        # Project index, status, version tracking
+    ├── project_tracker.py                        # Project index, status, readiness, version tracking
+    └── page_audit.py                             # HTML structural quality and compliance auditor
 ```
 
 **Progressive disclosure**: Only `SKILL.md` is loaded initially. Reference files are loaded on-demand during the specific phase that needs them.

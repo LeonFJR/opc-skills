@@ -1,0 +1,402 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Competitive Intelligence Metadata",
+  "description": "Schema for competitive landscape analysis metadata. Used by intel_tracker.py.",
+  "type": "object",
+  "required": [
+    "landscape_id",
+    "product_description",
+    "market",
+    "status",
+    "created_at"
+  ],
+  "properties": {
+    "landscape_id": {
+      "type": "string",
+      "description": "Unique ID in format: YYYY-MM-DD_landscape-slug",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}_[a-z0-9-]+$"
+    },
+    "product_description": {
+      "type": "string",
+      "description": "The one-sentence product description that initiated this analysis"
+    },
+    "landscape_name": {
+      "type": "string",
+      "description": "Human-readable name for this competitive landscape"
+    },
+    "landscape_slug": {
+      "type": "string",
+      "description": "URL-safe lowercase slug",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "archived"],
+      "description": "draft = initial analysis, active = being tracked, archived = no longer relevant"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Analysis version number, incremented on each major revision"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the analysis was created"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Date of last update"
+    },
+
+    "market": {
+      "type": "object",
+      "required": ["category", "market_stage", "buyer_type"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "description": "Primary market category, e.g. 'AI writing assistants'"
+        },
+        "subcategory": {
+          "type": ["string", "null"],
+          "description": "Market subcategory, e.g. 'long-form content generation'"
+        },
+        "adjacent_categories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Related markets that overlap or could expand into"
+        },
+        "market_stage": {
+          "type": "string",
+          "enum": ["emerging", "growing", "mature", "declining"],
+          "description": "Current lifecycle stage of this market"
+        },
+        "buyer_type": {
+          "type": "string",
+          "enum": ["b2c", "b2b_smb", "b2b_mid", "b2b_enterprise", "prosumer", "developer"],
+          "description": "Primary buyer persona type"
+        },
+        "switching_cost": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "How hard it is for users to switch between competitors"
+        },
+        "winner_take_all": {
+          "type": "boolean",
+          "description": "Whether this market tends toward monopoly/duopoly dynamics"
+        },
+        "key_trends": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Major trends shaping this market"
+        }
+      }
+    },
+
+    "competitors": {
+      "type": "array",
+      "description": "All identified competitors across tiers",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "tier", "threat_level"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique competitor slug, e.g. 'notion'"
+          },
+          "name": {
+            "type": "string",
+            "description": "Company or product name"
+          },
+          "url": {
+            "type": ["string", "null"],
+            "description": "Primary URL"
+          },
+          "tier": {
+            "type": "string",
+            "enum": ["direct", "indirect", "potential", "substitute"],
+            "description": "direct = same problem + audience + approach. indirect = same problem, different approach. potential = adjacent player who could enter. substitute = what users do without your product."
+          },
+          "threat_level": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low", "none"],
+            "description": "Overall threat to your product. Must be evidence-based."
+          },
+          "stage": {
+            "type": "string",
+            "enum": ["startup", "growth", "established", "dominant", "declining"],
+            "description": "Company lifecycle stage"
+          },
+          "positioning": {
+            "type": ["string", "null"],
+            "description": "Their one-liner value proposition"
+          },
+          "target_audience": {
+            "type": ["string", "null"],
+            "description": "Who they primarily serve"
+          },
+          "pricing_model": {
+            "type": ["string", "null"],
+            "enum": ["free", "freemium", "subscription", "usage_based", "one_time", "enterprise_sales", null],
+            "description": "How they charge"
+          },
+          "pricing_range": {
+            "type": ["string", "null"],
+            "description": "Price range, e.g. '$0-49/mo'"
+          },
+          "strengths": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Key competitive strengths"
+          },
+          "weaknesses": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Key competitive weaknesses"
+          },
+          "moat_type": {
+            "type": ["string", "null"],
+            "enum": ["network_effects", "data", "brand", "switching_cost", "distribution", "tech", "regulatory", "none", null],
+            "description": "Primary competitive moat"
+          },
+          "overlap_score": {
+            "type": ["integer", "null"],
+            "minimum": 0,
+            "maximum": 100,
+            "description": "How much this competitor overlaps with your product (0=none, 100=identical)"
+          },
+          "notes": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+
+    "not_competitors": {
+      "type": "array",
+      "description": "Companies that look like competitors but aren't — and why",
+      "items": {
+        "type": "object",
+        "required": ["name", "reason"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Company or product name"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why this is NOT a real competitor despite surface similarity"
+          }
+        }
+      }
+    },
+
+    "positioning": {
+      "type": ["object", "null"],
+      "description": "Recommended positioning strategy",
+      "properties": {
+        "recommended_position": {
+          "type": "string",
+          "description": "Where to position in the market"
+        },
+        "differentiation_axis": {
+          "type": "string",
+          "description": "Primary axis of differentiation"
+        },
+        "differentiation_type": {
+          "type": "string",
+          "enum": ["price", "niche", "experience", "tech", "integration", "speed", "simplicity"],
+          "description": "Category of differentiation strategy"
+        },
+        "target_gap": {
+          "type": "string",
+          "description": "Specific gap in the market you should fill"
+        },
+        "avoid_battles": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Head-on battles the founder should NOT fight"
+        },
+        "messaging_angle": {
+          "type": ["string", "null"],
+          "description": "How to talk about your product vs competitors"
+        },
+        "wedge_strategy": {
+          "type": ["string", "null"],
+          "description": "Recommended market entry approach"
+        },
+        "comparison_handling": {
+          "type": "array",
+          "description": "How to respond when compared to specific competitors",
+          "items": {
+            "type": "object",
+            "required": ["competitor_name", "response"],
+            "properties": {
+              "competitor_name": { "type": "string" },
+              "response": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "threat_matrix": {
+      "type": "array",
+      "description": "Detailed threat assessment per competitor per dimension",
+      "items": {
+        "type": "object",
+        "required": ["competitor_id", "dimension", "threat_level", "evidence"],
+        "properties": {
+          "competitor_id": {
+            "type": "string",
+            "description": "References competitors[].id"
+          },
+          "dimension": {
+            "type": "string",
+            "enum": ["feature_parity", "pricing", "distribution", "brand", "funding", "talent"],
+            "description": "Which competitive dimension is being assessed"
+          },
+          "threat_level": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "evidence": {
+            "type": "string",
+            "description": "Specific evidence supporting this threat level"
+          },
+          "your_counter": {
+            "type": ["string", "null"],
+            "description": "How to respond to this specific threat"
+          }
+        }
+      }
+    },
+
+    "signals": {
+      "type": "array",
+      "description": "Intelligence signals — market events and competitor moves",
+      "items": {
+        "type": "object",
+        "required": ["id", "date", "signal_type", "severity", "description"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique signal ID, e.g. signal-001"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "When the signal was detected"
+          },
+          "competitor_id": {
+            "type": ["string", "null"],
+            "description": "Which competitor this signal relates to (null for market-wide signals)"
+          },
+          "signal_type": {
+            "type": "string",
+            "enum": ["product_launch", "pricing_change", "funding", "acquisition", "pivot", "hiring", "partnership", "shutdown"],
+            "description": "Type of competitive intelligence signal"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["high", "medium", "low"],
+            "description": "How impactful this signal is for your strategy"
+          },
+          "description": {
+            "type": "string",
+            "description": "What happened"
+          },
+          "implication": {
+            "type": ["string", "null"],
+            "description": "What this means for you"
+          },
+          "action_needed": {
+            "type": ["string", "null"],
+            "description": "Recommended response action"
+          }
+        }
+      }
+    },
+
+    "market_forces": {
+      "type": ["object", "null"],
+      "description": "Porter's Five Forces adapted for solo founders",
+      "properties": {
+        "buyer_power": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "How easily can customers switch or bargain?"
+        },
+        "supplier_power": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Platform dependency, API dependency?"
+        },
+        "new_entrant_threat": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "How easy to copy your product?"
+        },
+        "substitute_threat": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Can users just use Excel/Notion/manual process?"
+        },
+        "competitive_intensity": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "How crowded and aggressive is the market?"
+        },
+        "summary": {
+          "type": ["string", "null"],
+          "description": "One-paragraph summary of market dynamics"
+        }
+      }
+    },
+
+    "action_items": {
+      "type": "array",
+      "description": "Prioritized next steps from the analysis",
+      "items": {
+        "type": "object",
+        "required": ["priority", "action"],
+        "properties": {
+          "priority": {
+            "type": "string",
+            "enum": ["immediate", "short_term", "medium_term"],
+            "description": "immediate = this week, short_term = this month, medium_term = this quarter"
+          },
+          "action": {
+            "type": "string",
+            "description": "Specific action to take"
+          },
+          "rationale": {
+            "type": ["string", "null"],
+            "description": "Why this action matters"
+          }
+        }
+      }
+    },
+
+    "output_files": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Relative paths to generated analysis files"
+    },
+
+    "product_id": {
+      "type": ["string", "null"],
+      "description": "Linked product spec ID from opc-product-manager"
+    },
+    "landing_page_project_id": {
+      "type": ["string", "null"],
+      "description": "Linked landing page project ID from opc-landing-page-manager"
+    },
+
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Free-form notes about this competitive landscape"
+    }
+  }
+}

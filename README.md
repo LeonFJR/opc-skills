@@ -12,6 +12,7 @@ Build, run, and grow your business with AI-powered operational tools — designe
 | [opc-invoice-manager](./opc-invoice-manager/) | AR light system — invoice generation, collections follow-up, payment reconciliation, aging analysis, and cash flow visibility. | Available |
 | [opc-landing-page-manager](./opc-landing-page-manager/) | Landing page strategy, copywriting, design, and code generation — from product idea to a complete, conversion-optimized HTML page. | Available |
 | [opc-product-manager](./opc-product-manager/) | Product spec generation — turn a one-sentence idea into a build-ready spec for Claude Code. MVP scoping, tech stack recommendations, complexity assessment. | Available |
+| [opc-cash-flow-manager](./opc-cash-flow-manager/) | Cash flow decision system — probability-weighted forecasting, runway calculation, burn rate analysis, survival alerts, and cost-cut recommendations. | Available |
 
 ## Installation
 

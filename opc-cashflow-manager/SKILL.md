@@ -1,5 +1,5 @@
 ---
-name: opc-cash-flow-manager
+name: opc-cashflow-manager
 description: >
   Cash flow decision system for solo founders. Probability-weighted forecasting,
   runway calculation, burn rate analysis, and survival alerts. Integrates with

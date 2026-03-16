@@ -1,4 +1,4 @@
-# opc-cash-flow-manager
+# opc-cashflow-manager
 
 Cash flow decision system for solo founders. Probability-weighted forecasting, runway calculation, burn rate analysis, and survival alerts.
 
@@ -54,14 +54,14 @@ git clone https://github.com/LeonFJR/opc-skills.git ~/.claude/skills/opc-skills
 ### Option 2: Copy just this skill
 
 ```bash
-cp -r opc-skills/opc-cash-flow-manager ~/.claude/skills/opc-cash-flow-manager
+cp -r opc-skills/opc-cashflow-manager ~/.claude/skills/opc-cashflow-manager
 ```
 
 ### Option 3: Add as a project skill
 
 ```json
 {
-  "skills": ["path/to/opc-skills/opc-cash-flow-manager"]
+  "skills": ["path/to/opc-skills/opc-cashflow-manager"]
 }
 ```
 
@@ -70,7 +70,7 @@ cp -r opc-skills/opc-cash-flow-manager ~/.claude/skills/opc-cash-flow-manager
 ### Create a forecast
 
 ```
-/opc-cash-flow-manager
+/opc-cashflow-manager
 
 I have $25,000 in the bank. Expected: $8,000 from Acme (invoice sent, due in 2 weeks),
 $5,000 from Beta (verbal agreement, maybe next month), $3,000 pipeline lead.

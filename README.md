@@ -14,6 +14,7 @@ Build, run, and grow your business with AI-powered operational tools — designe
 | [opc-product-manager](./opc-product-manager/) | Product spec generation — turn a one-sentence idea into a build-ready spec for Claude Code. MVP scoping, tech stack recommendations, complexity assessment. | Available |
 | [opc-cashflow-manager](./opc-cashflow-manager/) | Cash flow decision system — probability-weighted forecasting, runway calculation, burn rate analysis, survival alerts, and cost-cut recommendations. | Available |
 | [opc-competitive-intelligence](./opc-competitive-intelligence/) | Competitive intelligence — turn a product description into a competitive map with market analysis, threat assessment, positioning strategy, and comparison handling. | Available |
+| [opc-social-media-manager](./opc-social-media-manager/) | Social media growth OS — brand positioning, multi-platform content generation, content calendar, engagement management, and performance review. | Available |
 
 ## Installation
 

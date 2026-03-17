@@ -1,0 +1,587 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Social Media Manager Metadata",
+  "description": "Schema for social media strategy, content, calendar, engagement, and review data. Used by social_tracker.py.",
+  "type": "object",
+  "required": [
+    "profile_id",
+    "brand_name",
+    "status",
+    "created_at"
+  ],
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "description": "Unique ID in format: YYYY-MM-DD_brand-slug",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}_[a-z0-9-]+$"
+    },
+    "brand_name": {
+      "type": "string",
+      "description": "Brand or product name"
+    },
+    "brand_slug": {
+      "type": "string",
+      "description": "URL-safe lowercase slug",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["setup", "active", "paused", "archived"],
+      "description": "setup = brand profile being configured, active = publishing, paused = on hold, archived = no longer active"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Profile version, incremented on major strategy changes"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+
+    "brand_voice": {
+      "type": "object",
+      "description": "Brand voice profile — who you are and how you sound",
+      "properties": {
+        "identity": {
+          "type": "string",
+          "description": "One sentence: who you are and what you do"
+        },
+        "expertise": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Topics you're qualified to speak about"
+        },
+        "tone_attributes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "3-5 adjectives defining your voice, e.g. ['direct', 'technical', 'opinionated', 'builder-minded']"
+        },
+        "voice_examples": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "2-3 example sentences in your voice"
+        },
+        "never_say": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Phrases, tones, or styles to never use"
+        },
+        "persona": {
+          "type": ["string", "null"],
+          "enum": ["founder", "operator", "researcher", "builder", null],
+          "description": "Default persona for content generation"
+        }
+      }
+    },
+
+    "audiences": {
+      "type": "array",
+      "description": "Target audience segments, ordered by priority",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "priority"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Audience slug, e.g. 'potential-customers'"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable label"
+          },
+          "description": {
+            "type": ["string", "null"],
+            "description": "Who they are and what they care about"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["primary", "secondary", "tertiary"],
+            "description": "How much content should target them"
+          },
+          "platforms": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Which platforms this audience is on"
+          }
+        }
+      }
+    },
+
+    "content_pillars": {
+      "type": "array",
+      "description": "Content pillars — the 3-5 themes all content must fit into",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "weight"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Pillar slug, e.g. 'product-building'"
+          },
+          "name": {
+            "type": "string",
+            "description": "Pillar name, e.g. 'Product Building Journey'"
+          },
+          "description": {
+            "type": ["string", "null"],
+            "description": "What kind of content fits this pillar"
+          },
+          "weight": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Target percentage of total content (all pillars should sum to ~100)"
+          },
+          "content_types": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Types of content: opinion, case_study, product_update, industry_commentary, personal_narrative, educational, curation"
+          },
+          "example_topics": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "3-5 example topic ideas for this pillar"
+          }
+        }
+      }
+    },
+
+    "platform_strategy": {
+      "type": "object",
+      "description": "Per-platform strategy and goals",
+      "properties": {
+        "platforms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["platform", "active", "goal"],
+            "properties": {
+              "platform": {
+                "type": "string",
+                "enum": ["x", "linkedin", "threads", "bluesky", "mastodon", "instagram", "tiktok", "youtube", "newsletter", "blog"],
+                "description": "Platform identifier"
+              },
+              "active": {
+                "type": "boolean",
+                "description": "Whether this platform is currently active"
+              },
+              "goal": {
+                "type": "string",
+                "enum": ["awareness", "authority", "leads", "community", "seo", "education"],
+                "description": "Primary goal for this platform"
+              },
+              "frequency": {
+                "type": "string",
+                "description": "Target posting frequency, e.g. '5x/week', '3x/week', '1x/week'"
+              },
+              "tone_override": {
+                "type": ["string", "null"],
+                "description": "Platform-specific tone adjustment, e.g. 'more casual on X, more structured on LinkedIn'"
+              },
+              "handle": {
+                "type": ["string", "null"],
+                "description": "Your handle/username on this platform"
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "red_lines": {
+      "type": "object",
+      "description": "Content boundaries and risk controls",
+      "properties": {
+        "prohibited_topics": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Topics that must never appear in content"
+        },
+        "prohibited_claims": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Claims that cannot be made without evidence, e.g. 'industry first', 'guaranteed results'"
+        },
+        "confidential_entities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Client names, deal details, revenue figures, etc. that must never be mentioned"
+        },
+        "competitor_rules": {
+          "type": ["string", "null"],
+          "description": "Policy on mentioning competitors, e.g. 'never name competitors directly' or 'compare respectfully'"
+        },
+        "legal_disclaimers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Required disclaimers for specific content types"
+        }
+      }
+    },
+
+    "topic_backlog": {
+      "type": "array",
+      "description": "Topic ideas pool — the backlog of content to create",
+      "items": {
+        "type": "object",
+        "required": ["id", "topic", "pillar_id", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Topic ID, e.g. 'topic-001'"
+          },
+          "topic": {
+            "type": "string",
+            "description": "Topic title or one-liner"
+          },
+          "pillar_id": {
+            "type": "string",
+            "description": "Which content pillar this belongs to"
+          },
+          "content_type": {
+            "type": ["string", "null"],
+            "enum": ["opinion", "case_study", "product_update", "industry_commentary", "personal_narrative", "educational", "curation", null]
+          },
+          "density": {
+            "type": ["string", "null"],
+            "enum": ["heavy", "medium", "light", null],
+            "description": "Content density: heavy = deep technical, medium = structured insight, light = quick take"
+          },
+          "angles": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Different angles to approach this topic"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["high", "medium", "low"],
+            "description": "Publishing priority"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["idea", "planned", "drafted", "published", "recycled"],
+            "description": "Current status in the pipeline"
+          },
+          "target_platforms": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Which platforms this topic should be published on"
+          },
+          "source": {
+            "type": ["string", "null"],
+            "description": "Where the idea came from: audience_question, trending, product_update, personal_experience, competitor_move, etc."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    },
+
+    "content_items": {
+      "type": "array",
+      "description": "Published or drafted content items",
+      "items": {
+        "type": "object",
+        "required": ["id", "topic_id", "platform", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content item ID, e.g. 'post-001'"
+          },
+          "topic_id": {
+            "type": ["string", "null"],
+            "description": "References topic_backlog[].id"
+          },
+          "platform": {
+            "type": "string",
+            "description": "Target platform"
+          },
+          "content_format": {
+            "type": "string",
+            "enum": ["post", "thread", "carousel", "long_form", "comment_reply", "dm_reply", "video_script", "newsletter_section"],
+            "description": "Content format type"
+          },
+          "persona": {
+            "type": ["string", "null"],
+            "enum": ["founder", "operator", "researcher", "builder", null]
+          },
+          "language": {
+            "type": "string",
+            "enum": ["en", "zh", "bilingual"],
+            "description": "Content language"
+          },
+          "body": {
+            "type": ["string", "null"],
+            "description": "The actual content text"
+          },
+          "hook": {
+            "type": ["string", "null"],
+            "description": "Opening hook used"
+          },
+          "cta": {
+            "type": ["string", "null"],
+            "description": "Call-to-action used"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "ready", "scheduled", "published", "archived"]
+          },
+          "scheduled_date": {
+            "type": ["string", "null"],
+            "format": "date",
+            "description": "When this is scheduled to publish"
+          },
+          "published_date": {
+            "type": ["string", "null"],
+            "format": "date"
+          },
+          "risk_warnings": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Any risky phrasing or brand safety warnings"
+          },
+          "performance": {
+            "type": ["object", "null"],
+            "description": "Post-publish performance metrics",
+            "properties": {
+              "impressions": { "type": ["integer", "null"] },
+              "engagements": { "type": ["integer", "null"] },
+              "likes": { "type": ["integer", "null"] },
+              "comments": { "type": ["integer", "null"] },
+              "shares": { "type": ["integer", "null"] },
+              "saves": { "type": ["integer", "null"] },
+              "clicks": { "type": ["integer", "null"] },
+              "leads": { "type": ["integer", "null"] },
+              "dms": { "type": ["integer", "null"] },
+              "engagement_rate": { "type": ["number", "null"] },
+              "notes": { "type": ["string", "null"] }
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    },
+
+    "calendar": {
+      "type": "object",
+      "description": "Content calendar configuration",
+      "properties": {
+        "current_week": {
+          "type": ["string", "null"],
+          "description": "Current planning week in YYYY-Wnn format"
+        },
+        "weekly_slots": {
+          "type": "array",
+          "description": "Weekly publishing slots",
+          "items": {
+            "type": "object",
+            "required": ["day", "platform"],
+            "properties": {
+              "day": {
+                "type": "string",
+                "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+              },
+              "platform": { "type": "string" },
+              "slot_type": {
+                "type": ["string", "null"],
+                "description": "Suggested content type for this slot, e.g. 'opinion', 'product_update'"
+              },
+              "content_id": {
+                "type": ["string", "null"],
+                "description": "Assigned content item ID, null if slot is empty"
+              }
+            }
+          }
+        },
+        "series": {
+          "type": "array",
+          "description": "Recurring content series",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "frequency"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": {
+                "type": "string",
+                "description": "Series name, e.g. 'Weekly Build Log', 'Friday Founder Lessons'"
+              },
+              "frequency": {
+                "type": "string",
+                "description": "e.g. 'weekly', 'biweekly'"
+              },
+              "platform": { "type": "string" },
+              "pillar_id": { "type": ["string", "null"] },
+              "episode_count": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+
+    "engagement": {
+      "type": "object",
+      "description": "Engagement tracking and queue",
+      "properties": {
+        "reply_queue": {
+          "type": "array",
+          "description": "Pending replies and interactions",
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "priority", "status"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Interaction ID, e.g. 'interact-001'"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["comment_reply", "dm_reply", "collab_invite", "media_inquiry", "investor_outreach", "customer_question"],
+                "description": "Type of interaction"
+              },
+              "from": {
+                "type": "string",
+                "description": "Who initiated the interaction"
+              },
+              "from_tier": {
+                "type": "string",
+                "enum": ["potential_customer", "existing_customer", "media", "investor", "kol", "peer", "general"],
+                "description": "How valuable this person is"
+              },
+              "platform": { "type": "string" },
+              "context": {
+                "type": ["string", "null"],
+                "description": "What they said or asked"
+              },
+              "suggested_reply": {
+                "type": ["string", "null"],
+                "description": "Generated reply suggestion"
+              },
+              "priority": {
+                "type": "string",
+                "enum": ["urgent", "high", "medium", "low"]
+              },
+              "status": {
+                "type": "string",
+                "enum": ["pending", "replied", "skipped", "escalated"]
+              },
+              "content_opportunity": {
+                "type": ["string", "null"],
+                "description": "If this interaction suggests a new content topic"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "high_value_contacts": {
+          "type": "array",
+          "description": "People worth maintaining relationship with",
+          "items": {
+            "type": "object",
+            "required": ["name", "tier"],
+            "properties": {
+              "name": { "type": "string" },
+              "tier": {
+                "type": "string",
+                "enum": ["potential_customer", "existing_customer", "media", "investor", "kol", "peer"]
+              },
+              "platform": { "type": "string" },
+              "handle": { "type": ["string", "null"] },
+              "last_interaction": { "type": ["string", "null"], "format": "date" },
+              "notes": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+
+    "reviews": {
+      "type": "array",
+      "description": "Weekly content review snapshots",
+      "items": {
+        "type": "object",
+        "required": ["week", "created_at"],
+        "properties": {
+          "week": {
+            "type": "string",
+            "description": "Week identifier in YYYY-Wnn format"
+          },
+          "posts_published": { "type": "integer" },
+          "total_impressions": { "type": ["integer", "null"] },
+          "total_engagements": { "type": ["integer", "null"] },
+          "avg_engagement_rate": { "type": ["number", "null"] },
+          "best_performing": {
+            "type": ["object", "null"],
+            "properties": {
+              "content_id": { "type": "string" },
+              "platform": { "type": "string" },
+              "why": { "type": "string" }
+            }
+          },
+          "worst_performing": {
+            "type": ["object", "null"],
+            "properties": {
+              "content_id": { "type": "string" },
+              "platform": { "type": "string" },
+              "why": { "type": "string" }
+            }
+          },
+          "effective_patterns": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "What worked this week"
+          },
+          "ineffective_patterns": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "What didn't work"
+          },
+          "next_week_recommendations": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Specific recommendations for next week"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    },
+
+    "output_files": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Relative paths to generated files"
+    },
+
+    "product_id": {
+      "type": ["string", "null"],
+      "description": "Linked product spec ID from opc-product-manager"
+    },
+    "landing_page_project_id": {
+      "type": ["string", "null"],
+      "description": "Linked landing page project ID from opc-landing-page-manager"
+    },
+    "landscape_id": {
+      "type": ["string", "null"],
+      "description": "Linked competitive landscape ID from opc-competitive-intelligence"
+    },
+
+    "notes": {
+      "type": ["string", "null"]
+    }
+  }
+}

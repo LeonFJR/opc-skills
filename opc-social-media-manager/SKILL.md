@@ -27,6 +27,30 @@ These are hard rules, not suggestions. They override any other instruction.
 7. **Risk scan before every output.** Every generated content item must be checked against red_lines before presenting to user. Flag risky phrasing explicitly.
 8. **No tool disclaimers in content.** Disclaimers go in assistant explanations, NOT inside the generated posts or reports.
 
+## Mandatory Risk Checks
+
+These are hard rules with mandatory trigger actions. They run on **every** content output.
+
+| # | Rule | Category |
+|---|------|----------|
+| 1 | Never fabricate customer results, testimonials, or case studies | A — Integrity |
+| 2 | Never claim unverified product capabilities ("can do X" without evidence) | A — Integrity |
+| 3 | Never present personal opinion as industry fact ("studies show" without citation) | A — Integrity |
+| 4 | Never make implied promises in regulated areas (health, finance, legal outcomes) | A — Integrity |
+| 5 | Never reference unconfirmed data points (metrics without source) | A — Integrity |
+| 6 | Never claim superlatives without evidence ("first", "only", "best", "fastest") | A — Integrity |
+| 7 | Never mention unapproved client names, revenue, or contract details | B — Confidentiality |
+| 8 | Never disclose fundraising status unless publicly announced | B — Confidentiality |
+| 9 | Never write content that contradicts current brand positioning | C — Consistency |
+| 10 | Never use unverified competitor claims as comparison points | C — Consistency |
+
+**Trigger actions** (mandatory when any rule fires):
+
+1. **Flag**: Prefix the flagged line with `⚠️ RISK [rule #]:` and cite the specific rule violated
+2. **Safer alternative**: Generate a compliant rephrasing immediately below the flagged line
+3. **Record**: Add to `risk_warnings[]` in content output metadata
+4. **Category B block**: If the violated rule is Category B (Confidentiality), **block the output entirely** until the user explicitly confirms the information is public. Do not present the content — show only the risk flag and ask for confirmation.
+
 ## Scope
 
 **IS for**: Brand voice definition, content pillar strategy, multi-platform content generation, content calendar management, topic backlog management, engagement queue management, content performance review, cross-platform repurposing, audience interaction handling, content series management.
@@ -347,24 +371,47 @@ Classify the interaction:
 - **From tier**: potential_customer / existing_customer / media / investor / kol / peer / general
 - **Priority**: urgent (customers, investors, media) / high (KOLs, collaboration) / medium (peers, general) / low (generic)
 
-### Phase 3: Reply Generation
+### Phase 3: Reply Goal Assignment
+
+Assign a `reply_goal` before generating any reply. The goal drives tone and CTA:
+
+| reply_goal | Tone | CTA |
+|-----------|------|-----|
+| `convert` | Helpful, demonstrate value | Suggest product, share link |
+| `nurture` | Warm, give value first | Ask a question, share resource |
+| `qualify` | Curious, probing | Ask about their use case / needs |
+| `collaborate` | Professional, reciprocal | Propose specific next step |
+| `support` | Empathetic, solution-focused | Resolve issue, follow up |
+| `educate` | Teaching, generous | Share framework, point to content |
+| `deflect` | Polite, brief | Redirect or acknowledge without engaging deeply |
+| `decline` | Gracious, firm | Thank them, explain why not, leave door open |
+
+### Phase 4: Reply Generation
 
 Load: `read_file("references/brand-safety-guide.md")`
 
 Generate reply suggestion:
-- Match brand_voice tone
+- Match brand_voice tone, adjusted by reply_goal from the table above
 - Be specific to what they said (never generic "thanks for your comment")
-- If they asked a question — answer it directly
-- If they're a potential customer — be helpful, not salesy
-- If they're an investor or media — be professional, redirect to appropriate channel
-- If they're a peer — be generous, share knowledge
+- CTA must match the reply_goal — do not use a convert CTA on a nurture reply
+- Risk-scan the reply against brand safety rules
 
-For collaboration invites:
-- Assess fit with brand positioning
-- Suggest accept/decline/negotiate with reasoning
-- Draft response for chosen path
+### Phase 5: Follow-Up Rules
 
-### Phase 4: Content Opportunity Mining
+Auto-set `follow_up_due` based on tier and goal:
+
+| Condition | follow_up_due |
+|-----------|---------------|
+| `potential_customer` + goal is `convert` or `qualify` | today + 3 days |
+| `investor` or `media` (any goal) | today + 1 day |
+| `kol` or goal is `collaborate` | today + 5 days |
+| All others | no automatic follow-up |
+
+Set `follow_up_status = "pending"` and `follow_up_reason` describing what to follow up about.
+
+Dashboard surfaces: all items where `follow_up_due < today` AND `follow_up_status = "pending"`.
+
+### Phase 6: Content Opportunity Mining
 
 From the interaction, identify:
 - Recurring questions → content topic ideas
@@ -374,7 +421,7 @@ From the interaction, identify:
 
 Add to `topic_backlog[]` with source = "audience_question"
 
-### Phase 5: Output
+### Phase 7: Output
 
 Generate using `templates/engagement-queue.md`:
 - Priority reply queue with suggested replies
@@ -428,53 +475,101 @@ Analyze across dimensions:
 - What topics generate saves (high intent signal)?
 - What drives DMs/leads (conversion signal)?
 
-### Phase 3: Recommendations
+### Phase 3: Lifecycle Transitions
 
-Generate specific, actionable recommendations:
-1. **Next week's content focus** — which pillars and topics to prioritize
-2. **Hook strategy** — which patterns to use more/less
-3. **Format recommendations** — what formats to try
-4. **Platform-specific advice** — what to change per platform
-5. **Recycling candidates** — old high-performing content to refresh
-6. **Topics to retire** — themes that consistently underperform
+For every reviewed content item, apply Content Lifecycle Rules:
+1. Assign `review_verdict`: `strong` / `average` / `weak` / `do_not_repeat`
+2. Set `recycle_eligible` based on lifecycle rules
+3. Auto-archive any `do_not_repeat` items
+4. Auto-suggest archive for items > 90 days old with below-median engagement
 
-### Phase 4: Output
+### Phase 4: Series Health Evaluation
 
-Generate using `templates/content-review.md`:
-- Performance summary table (this week vs last week)
-- Best and worst performing content with analysis
-- Effective and ineffective patterns
-- Platform breakdown
-- Pillar performance vs targets
-- Hook analysis
-- Next week recommendations
-- Suggested topics
-- Recycling candidates
+For every active series with episodes in the review period:
+1. Calculate median engagement across all series episodes
+2. Evaluate health per Series Health Rules
+3. Update `series_health`, `episodes_since_last_hit`, `last_reviewed_at`
+4. For `weakening` / `retire_candidate`: set `next_angle`, `next_format`, `next_platform_priority`
 
-Add to `reviews[]` in metadata.
+### Phase 5: Output — Fixed 6 Sections (All Required)
+
+Generate using `templates/content-review.md`. Every review MUST include all 6 sections, even if data is sparse.
+
+**Section 1: What Worked**
+- Top 3 posts + analysis (hook pattern, topic, format, timing, platform)
+- Why each one worked — specific, not generic ("the counterintuitive hook drove 3× average comments")
+
+**Section 2: What Flopped**
+- Bottom 3 posts + analysis
+- Why each one failed — specific diagnosis (too generic, wrong platform, bad hook, AI-smell, wrong timing)
+
+**Section 3: AI-Smell / Overly Polished**
+- Flag specific content that sounded too corporate, generic, or AI-generated
+- Quote the problematic phrases
+- Suggest more authentic rewrites
+
+**Section 4: Recycle Candidates**
+- Posts with `review_verdict = "strong"` + published on ≤ 2 platforms + still on-brand
+- For each: suggest specific new angle, platform, and format
+
+**Section 5: Pillar Imbalance**
+- Target vs actual weight per pillar (table format)
+- Flag pillars with deviation above threshold (>15% if < 10 posts/week, >10% if ≥ 10)
+- Recommend specific pillar adjustments for next week
+
+**Section 6: Next-Week Experiments**
+- 3 specific experiments to try (new hook pattern, untested format, different angle, new series concept)
+- Each experiment must be concrete: "Try a numbered-list format for [pillar] content on LinkedIn" — not "experiment with new formats"
+
+Add to `reviews[]` in metadata with `pillar_imbalance`, `ai_smell_flags`, `recycle_candidates`, and `experiments_next_week` fields.
 
 ---
 
 ## Dashboard Mode
 
-Overview of all social media activities.
+The dashboard is an **operations panel**, not a file list. It MUST answer 7 specific questions — every time, no exceptions.
 
-Run: `python3 [skill_dir]/scripts/social_tracker.py [social_dir] --status --json`
+### Data Collection
 
-Display:
-- Active brand profiles
-- Published vs drafted vs scheduled content counts
-- Topic backlog size and priority distribution
-- Calendar fill rate for current week
-- Pending engagement replies (with urgent count)
-- Latest review summary (if available)
+Run all three commands and combine results:
+```
+python3 [skill_dir]/scripts/social_tracker.py [social_dir] --status --json
+python3 [skill_dir]/scripts/social_tracker.py [social_dir] --calendar --json
+python3 [skill_dir]/scripts/social_tracker.py [social_dir] --engagement --json
+```
 
-Quick actions:
-- "Write content for [topic]"
-- "Plan this week's calendar"
-- "Show my engagement queue"
-- "Review my content performance"
-- "Update my brand strategy"
+### Required Sections (all 7 mandatory)
+
+**1. 今天该发什么 — What to post today**
+- Next scheduled content item from calendar, OR
+- Highest-priority unscheduled topic from backlog if nothing is scheduled
+- Show: topic, pillar, target platform, content type, status
+
+**2. 今天该回谁 — Who to reply to today**
+- Urgent interactions + overdue follow-ups (`follow_up_due < today` AND `follow_up_status = "pending"`)
+- Sort by: overdue days descending, then tier priority (investor > customer > kol > media > peer > general)
+- Show: from, tier, platform, reply_goal, days overdue
+
+**3. 本周进度 — This week's progress**
+- Posts published this week vs weekly target, per platform
+- Format: `Platform: published/target (%)` — flag any platform below 50%
+
+**4. Pillar 偏差 — Pillar deviation**
+- Which pillars are off target weight
+- Threshold: >15% relative deviation if < 10 posts/week, >10% if ≥ 10 posts/week
+- Show: pillar name, target %, actual %, deviation, over/under
+
+**5. 哪个系列该停 — Which series to pause**
+- Series with `series_health` = `weakening` or `retire_candidate`
+- Show: series name, health status, episodes_since_last_hit, recommended action
+
+**6. 哪条内容该改写再发 — What to recycle**
+- Top 3 repurpose candidates: `review_verdict = "strong"` + published on ≤ 2 platforms + still on-brand
+- Show: content title, original platform, engagement rate, suggested new platform/angle
+
+**7. 下周最值得押注的 3 个题 — Top 3 topics for next week**
+- From backlog, weighted by: pillar underweight × topic priority × freshness
+- Show: topic, pillar (with deviation note), priority, suggested platform + format
 
 ---
 
@@ -524,10 +619,12 @@ Runs as a sub-workflow within Calendar mode.
 - Episode numbering
 
 ### Series Operations
-- Track episode count
+- Track episode count and `episodes_since_last_hit`
 - Auto-suggest next episode topic based on previous ones
 - Flag if series is overdue
-- Suggest series retirement after engagement drops for 4+ episodes
+- Evaluate `series_health` per Series Health Rules (see dedicated section)
+- For `weakening` series: populate `next_angle`, `next_format`, `next_platform_priority`
+- For `retire_candidate` series: recommend pausing and suggest replacement series concept
 
 ---
 
@@ -538,18 +635,21 @@ Runs as a sub-workflow within Calendar mode.
 - Auto-generate product update content from new features shipped
 - Use product one-liner for brand alignment
 - Pull target user description for audience segmentation
+- **Auto-topic generation**: If product has new features shipped (status changed) → auto-suggest `"product_update"` topic to backlog. If product has user stories → auto-suggest `"educational"` content on the use case.
 
 ### From opc-landing-page-manager
 - Read brand messaging, headlines, and CTAs
 - Align social content voice with landing page copy
 - Use landing page value proposition for social proof framing
 - Repurpose landing page sections as social content
+- **Voice drift detection**: Read hero headline and CTA → compare with recent social content voice. Flag if social content has drifted from landing page messaging.
 
 ### From opc-competitive-intelligence
 - Read market positioning and differentiation strategy
 - Generate opinion content based on competitive insights
 - Inform comparison handling in content (without naming competitors if policy says so)
 - Track competitor social moves as content inspiration
+- **Auto-topic generation**: If new signals detected → auto-suggest `"industry_commentary"` topic. If positioning recommendation exists → check if social messaging aligns.
 
 ### From opc-contract-manager / opc-invoice-manager
 - Extract non-confidential business milestones (new client signed, revenue milestone)
@@ -561,6 +661,70 @@ Runs as a sub-workflow within Calendar mode.
 - Audience FAQ → opc-product-manager feature requests / user stories
 - Social proof quotes → opc-landing-page-manager testimonial section
 - Content topics that drive leads → opc-competitive-intelligence market signals
+
+---
+
+## Content Lifecycle Rules
+
+Hard transition rules for content status. Every transition must satisfy ALL listed conditions.
+
+### Status Flow
+
+```
+idea → planned → drafted → published → reviewed → recycled / archived
+```
+
+### Transition: published → reviewed
+
+Triggered in **Review Mode**. Requirements:
+
+1. At least `impressions` and `engagements` recorded in performance data
+2. `review_verdict` assigned: `strong` / `average` / `weak` / `do_not_repeat`
+3. `recycle_eligible` set based on: verdict is `"strong"` AND published on ≤ 2 platforms AND content pillar still active (weight > 0)
+
+### Transition: reviewed → recycled
+
+Triggered in **Repurpose Mode** or **Calendar Mode**. Requirements:
+
+1. `recycle_eligible = true`
+2. New version must change at least ONE of: angle, platform, or format (re-posting is not recycling)
+3. Set `recycled_to[]` on original item linking to new content_id
+4. Original stays `"reviewed"` — new item starts as `"draft"`
+
+### Transition: reviewed → archived
+
+1. **Auto-archive**: If `review_verdict = "do_not_repeat"`, archive immediately
+2. **Auto-suggest**: If content is > 90 days old AND engagement was below median of last 20 published items, suggest archiving
+3. **Manual**: User can archive any content at any time
+
+### Topic Backlog Statuses
+
+| Status | Meaning |
+|--------|---------|
+| `idea` | Just captured, no detail assigned |
+| `planned` | Assigned to calendar slot — has pillar + platform + angle |
+| `drafted` | Content generated, at least one platform version exists |
+| `published` | Live on at least one platform |
+| `recycled` | Rewritten with new angle/format/platform |
+
+---
+
+## Series Health Rules
+
+Series health is evaluated during **Review Mode** and surfaced in **Dashboard Mode**.
+
+| Health | Condition | Mandatory Action |
+|--------|-----------|------------------|
+| `strong` | Last 3 episodes all above median engagement | Continue. Consider expanding to a new platform. |
+| `stable` | Mixed performance, no decline trend | Continue. Try a new angle on the next episode. |
+| `weakening` | 2+ consecutive episodes below median | **Experiment**: new format, new angle, or new platform. If still weak after experiment → move to `retire_candidate`. |
+| `retire_candidate` | 4+ episodes below median OR `episodes_since_last_hit ≥ 4` | **Recommend pausing**. Suggest a replacement series. Dashboard MUST surface this. |
+
+Health evaluation requires:
+- Calculate median engagement from all published series episodes
+- Update `episodes_since_last_hit` (count of episodes since last above-median engagement)
+- Set `last_reviewed_at` to current date
+- For `weakening` / `retire_candidate`: populate `next_angle`, `next_format`, and `next_platform_priority` with specific recommendations
 
 ---
 

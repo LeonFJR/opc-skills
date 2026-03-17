@@ -331,7 +331,24 @@
           },
           "status": {
             "type": "string",
-            "enum": ["draft", "ready", "scheduled", "published", "archived"]
+            "enum": ["draft", "ready", "scheduled", "published", "reviewed", "recycled", "archived"],
+            "description": "draft = generated, ready = approved, scheduled = date set, published = live, reviewed = performance analyzed, recycled = repurposed to new content, archived = not reusable"
+          },
+          "review_verdict": {
+            "type": ["string", "null"],
+            "enum": ["strong", "average", "weak", "do_not_repeat", null],
+            "description": "Performance verdict set during Review. strong = high engagement, recycle-worthy. do_not_repeat = auto-archive."
+          },
+          "recycle_eligible": {
+            "type": ["boolean", "null"],
+            "description": "Whether this content can be repurposed. Set by review: verdict=strong AND ≤2 platforms AND still on-brand.",
+            "default": null
+          },
+          "recycled_to": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Content IDs of repurposed versions created from this item",
+            "default": []
           },
           "scheduled_date": {
             "type": ["string", "null"],
@@ -421,7 +438,35 @@
               },
               "platform": { "type": "string" },
               "pillar_id": { "type": ["string", "null"] },
-              "episode_count": { "type": "integer", "minimum": 0 }
+              "episode_count": { "type": "integer", "minimum": 0 },
+              "series_health": {
+                "type": ["string", "null"],
+                "enum": ["strong", "stable", "weakening", "retire_candidate", null],
+                "description": "strong = last 3 episodes above median. stable = mixed. weakening = 2+ below median. retire_candidate = 4+ below median."
+              },
+              "episodes_since_last_hit": {
+                "type": ["integer", "null"],
+                "minimum": 0,
+                "description": "Episodes since last above-median engagement performance"
+              },
+              "last_reviewed_at": {
+                "type": ["string", "null"],
+                "format": "date",
+                "description": "When series health was last evaluated"
+              },
+              "next_angle": {
+                "type": ["string", "null"],
+                "description": "Suggested angle for the next episode"
+              },
+              "next_format": {
+                "type": ["string", "null"],
+                "enum": ["post", "thread", "carousel", "long_form", "video_script", "newsletter_section", null],
+                "description": "Suggested format for next episode"
+              },
+              "next_platform_priority": {
+                "type": ["string", "null"],
+                "description": "Which platform to prioritize for next episode"
+              }
             }
           }
         }
@@ -473,6 +518,25 @@
               "status": {
                 "type": "string",
                 "enum": ["pending", "replied", "skipped", "escalated"]
+              },
+              "reply_goal": {
+                "type": ["string", "null"],
+                "enum": ["convert", "nurture", "deflect", "educate", "qualify", "collaborate", "support", "decline", null],
+                "description": "What the reply should achieve. Drives tone and CTA selection."
+              },
+              "follow_up_due": {
+                "type": ["string", "null"],
+                "format": "date",
+                "description": "When to follow up. Auto-set: customer+convert=+3d, investor/media=+1d, kol+collab=+5d."
+              },
+              "follow_up_reason": {
+                "type": ["string", "null"],
+                "description": "Why follow-up is needed, e.g. 'qualifying conversation started, waiting for response'"
+              },
+              "follow_up_status": {
+                "type": ["string", "null"],
+                "enum": ["pending", "done", "snoozed", null],
+                "description": "Follow-up tracking: pending = not yet done, done = completed, snoozed = deferred"
               },
               "content_opportunity": {
                 "type": ["string", "null"],
@@ -552,6 +616,42 @@
             "type": "array",
             "items": { "type": "string" },
             "description": "Specific recommendations for next week"
+          },
+          "pillar_imbalance": {
+            "type": "array",
+            "description": "Pillar weight deviations detected during review",
+            "items": {
+              "type": "object",
+              "properties": {
+                "pillar_id": { "type": "string" },
+                "target_weight": { "type": "integer" },
+                "actual_weight": { "type": "integer" },
+                "deviation": { "type": "integer" }
+              }
+            }
+          },
+          "ai_smell_flags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Content that sounded too generic, corporate, or AI-generated"
+          },
+          "recycle_candidates": {
+            "type": "array",
+            "description": "Content items eligible for repurposing",
+            "items": {
+              "type": "object",
+              "properties": {
+                "content_id": { "type": "string" },
+                "platform": { "type": "string" },
+                "suggested_new_angle": { "type": "string" },
+                "suggested_new_platform": { "type": ["string", "null"] }
+              }
+            }
+          },
+          "experiments_next_week": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Specific format/angle/hook experiments to try next week"
           },
           "created_at": {
             "type": "string",
